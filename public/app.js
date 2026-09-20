@@ -145,19 +145,4 @@
     });
   }
 
-  // Content remains visible unless the observer has been successfully created.
-  if ('IntersectionObserver' in window && !reducedMotion.matches) {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.06, rootMargin: '0px 0px -20px 0px' });
-    $$('[data-reveal]').forEach(element => { element.classList.add('will-reveal'); observer.observe(element); });
-    reducedMotion.addEventListener('change', event => {
-      if (event.matches) { $$('.will-reveal').forEach(element => element.classList.add('is-visible')); observer.disconnect(); }
-    });
-  }
 })();

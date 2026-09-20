@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="72 24 225 300" role="img" aria-label="Team Rocket logo">
+  <defs>
+    <clipPath id="badge"><circle cx="185" cy="211" r="100"/></clipPath>
+    <polygon id="star" points="0,-7 2.1,-2.2 7,-2.2 3.5,1 4.4,6 0,3.5 -4.4,6 -3.5,1 -7,-2.2 -2.1,-2.2" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+  </defs>
+  <circle cx="185" cy="211" r="100" fill="#705bd5" stroke="#eb302c" stroke-width="3"/>
+  <g clip-path="url(#badge)">
+    <use href="#star" x="125" y="164"/>
+    <use href="#star" x="250" y="160"/>
+    <use href="#star" x="100" y="219"/>
+    <use href="#star" x="151" y="222"/>
+    <use href="#star" x="220" y="221"/>
+    <use href="#star" x="271" y="219"/>
+    <path d="M85 267Q85 244 105 244Q121 230 134 243Q143 245 148 258Q161 242 175 250Q185 239 197 248Q212 235 226 249Q240 243 250 255Q253 232 284 232V320H85Z" fill="white"/>
+  </g>
+  <path d="M164 84Q147 61 139 99L127 151L118 181L132 198L154 175ZM206 84Q223 61 231 99L243 151L252 181L238 198L216 175Z" fill="#eb302c"/>
+  <path d="M185 31C163 58 153 115 142 167L123 198Q145 219 185 219Q225 219 247 198L228 167C217 115 207 58 185 31Z" fill="#eb302c"/>
+  <path d="M174 61Q185 65 196 61C207 95 214 133 220 168L233 194Q213 207 185 207Q157 207 137 194L150 168C156 133 163 95 174 61Z" fill="white"/>
+  <path d="M166 218H204V243H166Z" fill="#eb302c"/>
+  <text x="183" y="190" text-anchor="middle" fill="#eb302c" font-family="Arial,sans-serif" font-size="64" font-weight="900" font-style="italic">R</text>
+</svg>
