@@ -2,7 +2,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { team, members, seasons, outreach, sponsorships } from '../team-data.mjs';
+import { team, members, seasons, outreach, sponsors, sponsorships } from '../team-data.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../public');
 const suppliedBasePath = String(process.env.SITE_BASE_PATH || '').trim();
@@ -36,8 +36,15 @@ function footer() {
     <div class="footer-bottom"><span>© <span data-year>${new Date().getFullYear()}</span> Team Rocket</span><a href="#top">Back to top ↑</a></div>
   </div></footer>`;
 }
-function pageHead(title, intro) {
-  return `<section class="page-heading"><div class="container page-heading-grid"><div><h1 class="display">${esc(title)}</h1><p>${esc(intro)}</p></div>${star('page-star')}</div></section>`;
+function pageHead(title, intro = '') {
+  return `<section class="page-heading"><div class="container page-heading-grid"><div><h1 class="display">${esc(title)}</h1>${intro ? `<p>${esc(intro)}</p>` : ''}</div>${star('page-star')}</div></section>`;
+}
+function sponsorSection() {
+  if (!sponsors.length) return '';
+  return `<section class="container sponsors-section" aria-labelledby="sponsors-title"><h2 id="sponsors-title" class="display section-title">Our Sponsors</h2><ul class="sponsor-list">${sponsors.map(s => {
+    const mark = s.image ? `<img src="${esc(s.image)}" alt="${esc(s.name)} logo" loading="lazy" width="300" height="160">` : `<span class="sponsor-name">${esc(s.name)}</span>`;
+    return `<li>${s.website ? `<a class="sponsor-mark" href="${esc(s.website)}" target="_blank" rel="noopener noreferrer">${mark}<span class="sr-only"> (opens in a new tab)</span></a>` : `<div class="sponsor-mark">${mark}</div>`}</li>`;
+  }).join('')}</ul></section>`;
 }
 function callout(title, copy, link = 'contact.html', label = 'Contact us') {
   return `<section class="callout"><div class="container callout-grid"><div><h2>${esc(title)}</h2><p>${esc(copy)}</p></div>${btn(link, label, 'button-light')}</div></section>`;
@@ -55,12 +62,12 @@ function layout(id, title, description, content) {
   <meta property="og:type" content="website">
   <meta property="og:title" content="${esc(title)} | Team Rocket FTC 21350">
   <meta property="og:description" content="${esc(description)}">
-  <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=3" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2">
-  <script src="app.js?v=2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <script src="app.js?v=3" defer></script>
 </head>
 <body id="top" data-page="${id}">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -79,37 +86,38 @@ const home = `
     <h1 class="display hero-title">TEAM<br><span>ROCKET</span></h1>
     <p class="hero-description">${esc(team.intro)}</p>
     <div class="button-row">${btn('team.html', 'Meet our team')}<a class="text-link" href="awards.html">Our achievements${arrow()}</a></div>
-    <p class="hero-location">Naperville, Illinois<span>Est. ${esc(team.founded)}</span></p>
+    <p class="hero-location">${esc(team.location)}<span>Est. ${esc(team.founded)}</span></p>
   </div>
-  <div class="hero-visual">${star('hero-star')}${photo('assets/team.jpg', 'Team Rocket members with their medals and trophies', 'Team Rocket at competition', 'hero-photo', true)}</div>
+  <div class="hero-visual">${star('hero-star')}${photo(team.photo.image, team.photo.alt, team.photo.caption, 'hero-photo', true)}</div>
 </div></section>
 <section class="section container about-section">
   <div class="section-heading"><p class="eyebrow">About us</p><h2 class="display section-title">Who We Are</h2></div>
-  <div class="about-copy"><p>Our team brings together students from schools across the Naperville area. We work together on the mechanical design, programming, and outreach that make up our FTC season.</p><h3>Our Mission</h3><p>${esc(team.mission)}</p><a class="text-link" href="team.html">More about the team${arrow()}</a></div>
+  <div class="about-copy"><p>${esc(team.about)}</p><h3>Our Mission</h3><p>${esc(team.mission)}</p><a class="text-link" href="team.html">More about the team${arrow()}</a></div>
 </section>
 <section class="competition-section"><div class="container competition-grid">
-  ${photo('assets/robot.jpg', 'Team Rocket’s INTO THE DEEP robot on the competition field', 'INTO THE DEEP, 2024–25', 'competition-feature')}
-  <div class="competition-copy"><p class="eyebrow">FIRST Tech Challenge</p><h2 class="display section-title">Competition</h2><p>We design and program a robot for each season’s game. Our team qualified for the Illinois Championship in both the 2023–24 and 2024–25 seasons.</p><div class="result-highlight"><span class="result-year">2024–25</span><h3>Motivate Award — 3rd Place</h3><p>Illinois Championship</p></div><div class="button-row"><a class="text-link" href="robot.html">Our robot${arrow()}</a><a class="text-link" href="awards.html">All results${arrow()}</a></div></div>
+  ${photo(team.robot.image, team.robot.alt, `${team.robot.game}, ${team.robot.season}`, 'competition-feature')}
+  <div class="competition-copy"><p class="eyebrow">FIRST Tech Challenge</p><h2 class="display section-title">Competition</h2><p>${esc(team.competitionSummary)}</p>${team.featuredResult ? `<div class="result-highlight"><span class="result-year">${esc(team.featuredResult.season)}</span><h3>${esc(team.featuredResult.title)}</h3><p>${esc(team.featuredResult.event)}</p></div>` : ''}<div class="button-row"><a class="text-link" href="robot.html">Our robot${arrow()}</a><a class="text-link" href="awards.html">All results${arrow()}</a></div></div>
 </div></section>
 <section class="section container home-outreach"><div class="section-heading-row"><div><p class="eyebrow">In our community</p><h2 class="display section-title">Outreach</h2></div><p>We share our interest in STEM through programming classes and design workshops.</p></div>
-  <div class="project-list">${outreach.map(p => `<a class="project-row" href="outreach.html#${p.id}"><div><h3>${esc(p.title)}</h3><p>${esc(p.partner)}, ${esc(p.location)}</p></div><span>${esc(p.duration)}</span>${arrow(true)}</a>`).join('')}</div>
+  <div class="project-list">${outreach.map(p => `<a class="project-row" href="outreach.html#${esc(p.id)}"><div><h3>${esc(p.title)}</h3><p>${esc([p.partner, p.location].filter(Boolean).join(', '))}</p></div><span>${esc(p.duration)}</span>${arrow(true)}</a>`).join('')}</div>
 </section>
+${sponsorSection()}
 ${callout('Support Team Rocket', 'Sponsorships help cover robot materials, competition fees, and our work in the community.', 'support.html', 'Sponsorship information')}`;
 
-const teamPage = `${pageHead('Our Team', 'We are an all-girls community robotics team based in Naperville, Illinois.')}
+const teamPage = `${pageHead('Our Team')}
 <section class="container team-intro">
-  ${photo('assets/team.jpg', 'Team Rocket members with medals and trophies', 'Team Rocket at competition', 'team-wide', true)}
-  <div class="team-intro-copy"><p class="eyebrow">Established ${esc(team.founded)}</p><h2 class="display section-title">About Team Rocket</h2><p>Our members attend schools across the Naperville area and contribute to hardware, CAD, software, and outreach.</p><p>${esc(team.mission)}</p></div>
+  ${photo(team.photo.image, team.photo.alt, team.photo.caption, 'team-wide', true)}
+  <div class="team-intro-copy"><p class="eyebrow">Established ${esc(team.founded)}</p><h2 class="display section-title">About Team Rocket</h2><p>${esc(team.about)}</p><p>${esc(team.mission)}</p></div>
 </section>
 <section class="section container"><div class="section-heading-row"><h2 class="display section-title">Team Members</h2><p>${esc(team.rosterSeason)} roster</p></div>
   <div class="member-grid">${members.map(m => `<article class="member"><div class="member-image"><img src="${esc(m.image)}" alt="${esc(m.name)}, Team Rocket member" loading="lazy" width="600" height="720" style="object-position:${esc(m.position)}"></div><h3>${esc(m.name)}</h3><p class="member-role">${esc(m.area)}</p><details class="member-bio"><summary>About ${esc(m.name)}${plus}</summary><div><p>${esc(m.bio)}</p><p class="member-school">${esc(m.school)}</p></div></details></article>`).join('')}</div>
 </section>
-${callout('Interested in joining?', 'Contact us to ask about the team and opportunities to get involved.', 'contact.html?topic=Joining%20the%20team', 'Contact the team')}`;
+${callout('Interested in joining?', 'Contact us to ask about the team and opportunities to get involved.', 'contact.html', 'Contact the team')}`;
 
-const robotPage = `${pageHead('Our Robot', 'Our robots are designed, built, and programmed by Team Rocket members for FIRST Tech Challenge.')}
+const robotPage = `${pageHead('Our Robot')}
 <section class="container robot-showcase">
   ${photo(team.robot.image, team.robot.alt, `${team.robot.game}, ${team.robot.season}`, 'robot-large', true)}
-  <div class="robot-story"><p class="eyebrow">${esc(team.robot.season)} season</p><h2 class="display section-title">${esc(team.robot.game)}</h2><p>${esc(team.robot.description)}</p>${team.robot.specs.length ? `<dl class="spec-list">${team.robot.specs.map(s => `<div><dt>${esc(s.label)}</dt><dd>${esc(s.value)}</dd></div>`).join('')}</dl>` : ''}${btn('awards.html?season=2024', 'View season results', 'button-ghost')}</div>
+  <div class="robot-story"><p class="eyebrow">${esc(team.robot.season)} season</p><h2 class="display section-title">${esc(team.robot.game)}</h2><p>${esc(team.robot.description)}</p>${team.robot.specs.length ? `<dl class="spec-list">${team.robot.specs.map(s => `<div><dt>${esc(s.label)}</dt><dd>${esc(s.value)}</dd></div>`).join('')}</dl>` : ''}${btn('awards.html' + (team.robot.resultsSeason ? '?season=' + encodeURIComponent(team.robot.resultsSeason) : ''), 'View season results', 'button-ghost')}</div>
 </section>
 <section class="section container engineering-section"><div class="section-heading-row"><h2 class="display section-title">Design &amp; Development</h2><p>Members contribute to each stage of the robot’s development throughout the season.</p></div>
   <div class="process-list"><article><h3>Mechanical Design</h3><p>We use CAD to plan the robot’s structure and mechanisms before building and assembling parts.</p></article><article><h3>Programming</h3><p>Our software team programs the robot’s autonomous routines and driver controls.</p></article><article><h3>Testing</h3><p>We use practice and competition results to identify problems and improve the robot.</p></article></div>
@@ -117,25 +125,24 @@ const robotPage = `${pageHead('Our Robot', 'Our robots are designed, built, and 
 <section class="container robot-update"><div><h2>Updates from the team</h2><p>See more of our robot and competitions on Instagram.</p></div>${ext(team.instagram, esc(team.instagramHandle))}</section>`;
 
 const outreachPage = `${pageHead('Outreach', 'We work with schools, community organizations, and other robotics teams to make STEM education more accessible.')}
-<div class="container outreach-stories">${outreach.map(p => `<section class="outreach-story" id="${p.id}"><div class="outreach-context"><p class="eyebrow">${esc(p.partner)}</p><h2 class="display">${esc(p.title)}</h2><p>${esc(p.location)}</p><p>${esc(p.duration)}</p></div><div class="outreach-story-copy"><p>${esc(p.description)}</p><p>${esc(p.detail)}</p>${ext(p.gallery, 'View workshop photos')}</div></section>`).join('')}</div>
-${callout('Work with us', 'If your school or organization is interested in a STEM workshop, contact us to discuss a possible collaboration.', 'contact.html?topic=Outreach', 'Contact us about outreach')}`;
+<div class="container outreach-stories">${outreach.map(p => `<section class="outreach-story" id="${esc(p.id)}"><div class="outreach-context">${p.partner ? `<p class="eyebrow">${esc(p.partner)}</p>` : ''}<h2 class="display">${esc(p.title)}</h2>${p.location ? `<p>${esc(p.location)}</p>` : ''}${p.duration ? `<p>${esc(p.duration)}</p>` : ''}</div><div class="outreach-story-copy"><p>${esc(p.description)}</p>${p.detail ? `<p>${esc(p.detail)}</p>` : ''}${p.image ? photo(p.image, p.imageAlt || p.title, p.imageCaption || '', 'outreach-photo') : ''}${p.gallery ? ext(p.gallery, 'View workshop photos') : ''}</div></section>`).join('')}</div>
+${callout('Work with us', 'If your school or organization is interested in a STEM workshop, contact us to discuss a possible collaboration.', 'contact.html', 'Contact us about outreach')}`;
 
-const awardsPage = `${pageHead('Achievements', 'Our awards and competition results, organized by season.')}
+const awardsPage = `${pageHead('Achievements')}
 <section class="container awards-section"><div class="award-filters" aria-label="Filter achievements by season"><button type="button" data-filter="all" aria-pressed="true">All seasons</button>${seasons.map(s => `<button type="button" data-filter="${s.id}" aria-pressed="false">${s.label}</button>`).join('')}</div><p class="filter-status sr-only" aria-live="polite"></p>
   <div class="season-list">${seasons.map(s => `<article class="season" data-season="${s.id}"><div class="season-side"><h2 class="display">${esc(s.label)}</h2><p class="game-name">${esc(s.game)}</p>${star('season-star')}</div><div class="season-content"><ul class="award-list">${s.highlights.map(a => `<li><h3>${esc(a.title)}</h3><p>${esc(a.event)}</p></li>`).join('')}</ul>${ext(s.source, s.id === '2022' ? 'Original team website' : 'Official FIRST results', 'source-link')}</div></article>`).join('')}</div>
 </section>`;
 
 const supportPage = `${pageHead('Sponsorship', 'As a community team, we rely on sponsorships and donations to help fund our season. Thank you for supporting Team Rocket.')}
+${sponsorSection()}
 <section class="container support-intro"><h2 class="display section-title">How Your Support Helps</h2><div><p>Sponsorships help cover robot parts, tools, competition registration, travel, and outreach materials. Your contribution supports our members’ engineering experience and the STEM programs we share with other students.</p><p>To become a sponsor, contact us at <a class="inline-link" href="mailto:${esc(team.email)}">${esc(team.email)}</a>.</p></div></section>
 <section class="section container sponsorship-section"><div class="section-heading-row"><h2 class="display section-title">Sponsorship Levels</h2><p>Select a level to see its benefits. Contact us to confirm current sponsorship options.</p></div>
-  <div class="tier-list">${sponsorships.map((s, i) => `<details class="tier" ${i === 0 ? 'open' : ''}><summary><span class="tier-name">${esc(s.name)}</span><span class="tier-amount">$${s.amount.toLocaleString('en-US')}<small>+</small></span>${plus}</summary><div class="tier-content"><ul>${s.benefits.map(b => `<li>${esc(b)}</li>`).join('')}</ul>${btn(`contact.html?topic=Sponsorship&tier=${s.name}`, `Inquire about ${esc(s.name)}`, 'button-small')}</div></details>`).join('')}</div>
+  <div class="tier-list">${sponsorships.map((s, i) => `<details class="tier" ${i === 0 ? 'open' : ''}><summary><span class="tier-name">${esc(s.name)}</span><span class="tier-amount">$${s.amount.toLocaleString('en-US')}<small>+</small></span>${plus}</summary><div class="tier-content"><ul>${s.benefits.map(b => `<li>${esc(b)}</li>`).join('')}</ul>${btn('contact.html', `Inquire about ${esc(s.name)}`, 'button-small')}</div></details>`).join('')}</div>
 </section>
-<section class="container other-support"><div><h2>Materials &amp; Mentorship</h2><p>We also welcome contributions of tools, materials, and engineering expertise.</p></div>${btn('contact.html?topic=Mentorship', 'Contact us', 'button-ghost')}</section>`;
+<section class="container other-support"><div><h2>Materials &amp; Mentorship</h2><p>We also welcome contributions of tools, materials, and engineering expertise.</p></div>${btn('contact.html', 'Contact us', 'button-ghost')}</section>`;
 
 const contactPage = `${pageHead('Contact Us', 'For questions about sponsorship, outreach, mentorship, or joining the team, please get in touch.')}
-<section class="container contact-grid"><div class="contact-info"><div class="contact-item"><h2>Email</h2><a class="contact-email" href="mailto:${esc(team.email)}">${esc(team.email)}</a><button class="copy-email" type="button" data-copy="${esc(team.email)}">Copy email address</button></div><div class="contact-item"><h2>Instagram</h2>${ext(team.instagram, esc(team.instagramHandle))}</div><div class="contact-item"><h2>Location</h2><p>${esc(team.location)}</p></div></div>
-  <div class="contact-form-wrap"><noscript><h2>Email the team</h2><p>Email <a href="mailto:${esc(team.email)}">${esc(team.email)}</a> directly. The draft helper needs JavaScript.</p></noscript><form id="contact-form" data-email="${esc(team.email)}"><h2>Email the team</h2><p class="form-intro">Write your message below, then open the draft in your email app to send it.</p><div class="form-row"><div class="field"><label for="contact-name">Name</label><input id="contact-name" name="name" autocomplete="name" required maxlength="100"></div><div class="field"><label for="contact-email">Email address</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="160"></div></div><div class="field"><label for="contact-topic">Subject</label><select id="contact-topic" name="topic"><option>General question</option><option>Sponsorship</option><option>Outreach</option><option>Mentorship</option><option>Joining the team</option></select></div><div class="field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="5" required maxlength="2000"></textarea></div><button class="button" type="submit">Prepare email draft${arrow()}</button><p class="form-note">This website does not send or store your message.</p></form><div id="draft-panel" class="draft-panel" tabindex="-1" hidden><h2>Email draft</h2><p>Review and send this message in your email app, or copy the text.</p><pre id="draft-preview"></pre><div class="button-row"><a id="draft-mailto" class="button" href="mailto:${esc(team.email)}">Open email app${arrow(true)}</a><button type="button" class="button button-ghost" id="copy-draft">Copy draft</button></div><button type="button" id="edit-draft" class="text-button">← Edit message</button></div></div>
-</section>`;
+<section class="container contact-grid"><div class="contact-info"><div class="contact-item"><h2>Email</h2><a class="contact-email" href="mailto:${esc(team.email)}">${esc(team.email)}</a><button class="copy-email" type="button" data-copy="${esc(team.email)}">Copy email address</button></div><div class="contact-item"><h2>Instagram</h2>${ext(team.instagram, esc(team.instagramHandle))}</div><div class="contact-item"><h2>Location</h2><p>${esc(team.location)}</p></div></div></section>`;
 
 const pages = [
   ['index', 'Home', team.intro, home],

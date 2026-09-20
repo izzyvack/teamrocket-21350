@@ -4,7 +4,6 @@
   document.documentElement.classList.add('js');
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 
   // Mobile navigation: closes after selection, Escape, or a click outside it.
@@ -108,41 +107,5 @@
     }
   }
   $$('[data-copy]').forEach(button => button.addEventListener('click', () => copyText(button.dataset.copy, 'Email address copied.')));
-
-  // No pretend submission: the visitor reviews a draft and sends it using their own email app.
-  const form = $('#contact-form');
-  if (form) {
-    const params = new URLSearchParams(location.search);
-    const topic = $('#contact-topic');
-    if ([...topic.options].some(option => option.value === params.get('topic'))) topic.value = params.get('topic');
-    const tiers = ['Platinum', 'Gold', 'Silver', 'Bronze', 'Copper', 'Nickel'];
-    if (tiers.includes(params.get('tier'))) $('#contact-message').value = `Hi Team Rocket! I’m interested in the ${params.get('tier')} sponsorship. Could you share more information?`;
-    let draft = '';
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-      if (!form.reportValidity()) return;
-      const fields = new FormData(form);
-      const name = String(fields.get('name')).trim();
-      const email = String(fields.get('email')).trim();
-      const message = String(fields.get('message')).trim();
-      if (!name || !message) { announce('Please add your name and a message.'); return; }
-      const subject = `Team Rocket 21350 — ${fields.get('topic')}`;
-      const body = `${message}\n\nFrom: ${name}\nReply to: ${email}`;
-      draft = `To: ${form.dataset.email}\nSubject: ${subject}\n\n${body}`;
-      $('#draft-preview').textContent = draft;
-      $('#draft-mailto').href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      form.hidden = true;
-      const panel = $('#draft-panel');
-      panel.hidden = false;
-      panel.focus({ preventScroll: true });
-      panel.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'nearest' });
-    });
-    $('#copy-draft').addEventListener('click', () => copyText(draft, 'Email draft copied.'));
-    $('#edit-draft').addEventListener('click', () => {
-      $('#draft-panel').hidden = true;
-      form.hidden = false;
-      $('#contact-message').focus({ preventScroll: true });
-    });
-  }
 
 })();
