@@ -1,0 +1,15 @@
+{
+  "name": "team-rocket-21350",
+  "version": "1.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Team Rocket FTC 21350 website for GitHub Pages.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node scripts/build.mjs && node server.mjs",
+    "dev": "node scripts/build.mjs && node server.mjs",
+    "build": "node scripts/build.mjs"
+  }
+}
